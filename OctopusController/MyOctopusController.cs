@@ -58,7 +58,10 @@ namespace OctopusController
             _randomTargets = randomTargets;
             //TODO: use the regions however you need to make sure each tentacle stays in its region
             _theta = new float[_tentacles[0].Bones.Length];
-
+            _swingMin = 0f;
+            _swingMax = 180f;
+            _twistMin = -45f;
+            _twistMax = 45f;
         }
 
               
@@ -88,6 +91,18 @@ namespace OctopusController
 
         #region private and internal methods
         //todo: add here anything that you need
+        private Quaternion GetSwing(Quaternion rot3)
+        {
+            //rot3 = Quaternion.AngleAxis(Mathf.Clamp(rot3.w, _swingMin, _swingMax), new Vector3(rot3.x, rot3.y, rot3.z));
+            Quaternion swing = Quaternion.Inverse(GetTwist(rot3)) * rot3;
+            return swing;
+        }
+
+        private Quaternion GetTwist(Quaternion rot3)
+        {
+            Quaternion twist = Quaternion.AngleAxis(rot3.w, new Vector3(0, rot3.y, 0)).normalized;
+            return twist;
+        }
 
         void update_ccd() {
 
@@ -107,6 +122,7 @@ namespace OctopusController
                     if (Math.Cos(angle) < 0.9999f) 
                     {
                         _tentacles[i].Bones[j].transform.Rotate(axis,_theta[j],Space.World);
+                        //_tentacles[i].Bones[j].transform.localRotation = GetSwing(_tentacles[i].Bones[j].transform.localRotation);
                     }
                 }
             }
