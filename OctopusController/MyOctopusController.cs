@@ -48,7 +48,7 @@ namespace OctopusController
             // foreach (Transform t in tentacleRoots)
             for(int i = 0;  i  < tentacleRoots.Length; i++)
             {
-
+                
                 _tentacles[i] = new MyTentacleController();
                 _tentacles[i].LoadTentacleJoints(tentacleRoots[i],TentacleMode.TENTACLE);
                 //TODO: initialize any variables needed in ccd

@@ -41,13 +41,15 @@ namespace OctopusController
                 case TentacleMode.TENTACLE:
                     //TODO: in _endEffectorphere you  keep a reference to the sphere with a collider attached to the endEffector
                     Transform tmpBone = root.GetChild(0);
-                    tmpBone = root.GetChild(0);
+                    tmpBone = tmpBone.GetChild(0);
                     for (int i = 0; i < 51; i++)
                     {
-                        tmpBone = root.GetChild(0);
+                        tmpBone = tmpBone.GetChild(0);
                         bonesFromRoot.Add(tmpBone);
                     }
                     _endEffectorSphere = bonesFromRoot.Last<Transform>();
+                    _bones = bonesFromRoot.ToArray();
+
                     break;
             }
             return Bones;
