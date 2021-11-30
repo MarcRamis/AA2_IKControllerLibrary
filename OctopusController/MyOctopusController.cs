@@ -91,17 +91,14 @@ namespace OctopusController
 
         #region private and internal methods
         //todo: add here anything that you need
-        private Quaternion GetSwing(Quaternion rot3)
+        private Quaternion GetSwing(Quaternion _rot)
         {
-            //rot3 = Quaternion.AngleAxis(Mathf.Clamp(rot3.w, _swingMin, _swingMax), new Vector3(rot3.x, rot3.y, rot3.z));
-            Quaternion swing = Quaternion.Inverse(GetTwist(rot3)) * rot3;
-            return swing;
+            return _rot * Quaternion.Inverse(GetTwist(_rot));
         }
 
-        private Quaternion GetTwist(Quaternion rot3)
+        private Quaternion GetTwist(Quaternion _rot)
         {
-            Quaternion twist = Quaternion.AngleAxis(rot3.w, new Vector3(0, rot3.y, 0)).normalized;
-            return twist;
+            return new Quaternion(0, _rot.y, 0, _rot.w).normalized;
         }
 
         void update_ccd() {
@@ -118,10 +115,38 @@ namespace OctopusController
                     angle = Mathf.Acos(Vector3.Dot(r1.normalized, r2.normalized)) * Mathf.Rad2Deg;
                     axis = Vector3.Cross(r1, r2).normalized;
 
-                    _theta[j] = Mathf.Clamp(angle, -180f, 180f);
+                    //Quaternion realRot = Quaternion.AngleAxis(angle, axis);
+                    _theta[j] = Mathf.Clamp(angle, 0f, 100f);
+
                     if (Math.Cos(angle) < 0.9999f) 
                     {
-                        _tentacles[i].Bones[j].transform.Rotate(axis,_theta[j],Space.World);
+                        _tentacles[i].Bones[j].Rotate(axis, angle, Space.World);
+
+                        _tentacles[i].Bones[j].localRotation.ToAngleAxis(out angle, out axis);
+
+                        Quaternion swing = GetSwing(Quaternion.AngleAxis(angle, axis));
+
+                        Quaternion twist = GetTwist(Quaternion.AngleAxis(angle, axis));
+
+                        twist.ToAngleAxis(out angle, out axis);
+
+                        float tempTwistAngle = Mathf.Clamp(angle, -5f, 10f);
+
+                        twist = Quaternion.AngleAxis(tempTwistAngle, axis);
+
+                        swing.ToAngleAxis(out angle, out axis);
+
+                        _theta[j] = Mathf.Clamp(angle, 0f, 100f);
+
+                        swing = Quaternion.AngleAxis(_theta[j], axis);
+
+                        Quaternion result = swing * twist;
+
+                        //result.ToAngleAxis(out angle, out axis);
+
+                        _tentacles[i].Bones[j].localRotation = result;
+
+                        //_tentacles[i].Bones[j].localRotation = swing;
                         //_tentacles[i].Bones[j].transform.localRotation = GetSwing(_tentacles[i].Bones[j].transform.localRotation);
                     }
                 }
