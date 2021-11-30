@@ -140,7 +140,7 @@ namespace OctopusController
 
                         swing = Quaternion.AngleAxis(_theta[j], axis);
 
-                        Quaternion result = swing * twist;
+                        Quaternion result = swing;
 
                         //result.ToAngleAxis(out angle, out axis);
 
