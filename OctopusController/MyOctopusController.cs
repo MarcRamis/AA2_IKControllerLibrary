@@ -58,10 +58,6 @@ namespace OctopusController
             _randomTargets = randomTargets;
             //TODO: use the regions however you need to make sure each tentacle stays in its region
             _theta = new float[_tentacles[0].Bones.Length];
-            _swingMin = 0f;
-            _swingMax = 100f;
-            _twistMin = -5f;
-            _twistMax = 10f;
         }
 
               
@@ -125,14 +121,14 @@ namespace OctopusController
 
                         // Descomposition
                         Quaternion swing = GetSwing(Quaternion.AngleAxis(angle, axis));
-                        //Quaternion twist = GetTwist(Quaternion.AngleAxis(angle, axis));
+                        Quaternion twist = GetTwist(Quaternion.AngleAxis(angle, axis));
 
                         // Twist rotation
-                        //twist.ToAngleAxis(out angle, out axis);
+                        twist.ToAngleAxis(out angle, out axis);
                         // Twist constraints
-                        //float tempTwistAngle = Mathf.Clamp(angle, _twistMin, _twistMax);
+                        float tempTwistAngle = Mathf.Clamp(angle, _twistMin, _twistMax);
                         // Twist rotation with constraints
-                        //twist = Quaternion.AngleAxis(tempTwistAngle, axis);
+                        twist = Quaternion.AngleAxis(tempTwistAngle, axis);
 
                         // Swing rotation
                         swing.ToAngleAxis(out angle, out axis);
@@ -143,7 +139,7 @@ namespace OctopusController
 
 
 
-                        Quaternion result = swing;
+                        Quaternion result = swing * twist;
                         _tentacles[i].Bones[j].localRotation = result;
                     }
                 }
