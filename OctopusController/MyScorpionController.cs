@@ -17,8 +17,8 @@ namespace OctopusController
         float animationRange;
 
         //LEGS
-        Transform[] legTargets = new Transform[6];
-        Transform[] legFutureBases = new Transform[6];
+        Transform[] legTargets;
+        Transform[] legFutureBases;
         MyTentacleController[] _legs = new MyTentacleController[6];
 
         private Vector3[,] copy;
@@ -28,21 +28,22 @@ namespace OctopusController
         public void InitLegs(Transform[] LegRoots,Transform[] LegFutureBases, Transform[] LegTargets)
         {
             
-            _legs = new MyTentacleController[LegRoots.Length];
             //Legs init
-            distances = new float[LegRoots.Length, 5];
-            copy = new Vector3[LegRoots.Length, 6];
+            _legs = new MyTentacleController[LegRoots.Length];
+            distances = new float[LegRoots.Length, 3];
+            copy = new Vector3[LegRoots.Length, 4];
+            
+            legTargets = LegTargets;
+            legFutureBases = LegFutureBases;
             for (int i = 0; i < LegRoots.Length; i++)
             {
                 _legs[i] = new MyTentacleController();
                 _legs[i].LoadTentacleJoints(LegRoots[i], TentacleMode.LEG);
                 //TODO: initialize anything needed for the FABRIK implementation
-                legTargets[i] = LegTargets[i];
-                legFutureBases[i] = LegFutureBases[i];
-                Debug.Log("0");
-                for (int j = 0; j < _legs[0].Bones.Length - 1; j++)
+                
+                for (int j = 0; j < _legs[i].Bones.Length - 1; j++)
                 {
-                    Debug.Log("1");
+                    Debug.Log(_legs[i].Bones.Length - 1);
                     distances[i,j] = Vector3.Distance(_legs[i].Bones[j].transform.position, _legs[i].Bones[j + 1].transform.position);
                 }
             }
@@ -137,7 +138,7 @@ namespace OctopusController
 
                         // STAGE 2: BACKWARD REACHING
                         //TODO
-                        for (int j = 0; j < _legs[0].Bones.Length; j++)
+                        for (int j = 0; j < _legs[i].Bones.Length; j++)
                         {
                             if (j == 0)
                             {
@@ -147,7 +148,7 @@ namespace OctopusController
                             else
                             {
                                 Vector3 tempVec = Vector3.Normalize(copy[i, j] - copy[i, j - 1]) * Vector3.Distance(_legs[i].Bones[j].position, _legs[i].Bones[j - 1].position) + copy[i, j - 1];
-                                copy[j,j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
+                                copy[i,j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
                             }
                         }
                     }
