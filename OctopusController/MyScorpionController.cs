@@ -7,7 +7,43 @@ using UnityEngine;
 
 namespace OctopusController
 {
-  
+
+    public delegate float ErrorFunction(Vector3 target, float[] solution);
+
+    public struct PositionRotation
+    {
+        Vector3 position;
+        Quaternion rotation;
+
+        public PositionRotation(Vector3 position, Quaternion rotation)
+        {
+            this.position = position;
+            this.rotation = rotation;
+        }
+
+        // PositionRotation to Vector3
+        public static implicit operator Vector3(PositionRotation pr)
+        {
+            return pr.position;
+        }
+        // PositionRotation to Quaternion
+        public static implicit operator Quaternion(PositionRotation pr)
+        {
+            return pr.rotation;
+        }
+    }
+
+    public class RobotJoint
+    {
+        // A single 1, which is the axes of movement
+        public Vector3 Axis;
+        public float MinAngle;
+        public float MaxAngle;
+
+        // The offset at resting position
+        public Vector3 StartOffset;
+    }
+
     public class MyScorpionController
     {
         //TAIL
@@ -81,6 +117,30 @@ namespace OctopusController
         {
 
         }
+        private PositionRotation ForwardKinematics(float[] Solution)
+        {
+            Vector3 prevPoint = _tail.Bones[0].transform.position;
+
+            // Takes object initial rotation into account
+            Quaternion rotation = Quaternion.identity;
+
+            //TODO
+
+            for (int i = 1; i < _tail.Bones.Length; i++)
+            {
+
+                rotation *= Quaternion.AngleAxis(Solution[i - 1], Joints[i - 1].Axis);
+                Vector3 nextPoint = prevPoint + rotation * Joints[i].StartOffset; //crear un quaternion con joint[].axis y multiplicarlo por el quaternion del offset del joint
+
+                Debug.DrawLine(prevPoint, nextPoint, Color.white);
+                prevPoint = nextPoint;
+            }
+
+
+            // The end of the effector
+            return new PositionRotation(prevPoint, rotation);
+        }
+
         #endregion
     }
 }
