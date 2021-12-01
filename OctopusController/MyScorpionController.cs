@@ -24,6 +24,8 @@ namespace OctopusController
         private Vector3[,] copy;
         private float[,] distances;
 
+        private bool[] legArrived = new bool[6];
+
         #region public
         public void InitLegs(Transform[] LegRoots,Transform[] LegFutureBases, Transform[] LegTargets)
         {
@@ -40,10 +42,9 @@ namespace OctopusController
                 _legs[i] = new MyTentacleController();
                 _legs[i].LoadTentacleJoints(LegRoots[i], TentacleMode.LEG);
                 //TODO: initialize anything needed for the FABRIK implementation
-                
+                legArrived[i] = false;
                 for (int j = 0; j < _legs[i].Bones.Length - 1; j++)
                 {
-                    Debug.Log(_legs[i].Bones.Length - 1);
                     distances[i,j] = Vector3.Distance(_legs[i].Bones[j].transform.position, _legs[i].Bones[j + 1].transform.position);
                 }
             }
@@ -72,6 +73,7 @@ namespace OctopusController
 
         public void UpdateIK()
         {
+            updateLegPos();
             updateLegs();
         }
         #endregion
@@ -82,6 +84,27 @@ namespace OctopusController
         private void updateLegPos()
         {
             //check for the distance to the futureBase, then if it's too far away start moving the leg towards the future base position
+            for(int i = 0; i < _legs.Length; i++)
+            {
+                
+                if(Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 1f || legArrived[i])
+                {
+                    legArrived[i] = true;
+                    if((Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 0.5f))
+                    {
+                        _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, legFutureBases[i].position + new Vector3(0, 0.5f, 0f), 0.4f);
+                    }
+                    else
+                    {
+                        _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, legFutureBases[i].position, 0.4f);
+                    }
+                    
+                    if (Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) < 0.1f)
+                    {
+                        legArrived[i] = false;
+                    }
+                }
+            }
             //
         }
         //TODO: implement Gradient Descent method to move tail if necessary
@@ -152,10 +175,6 @@ namespace OctopusController
                             }
                         }
                     }
-                    //for(int i = 0; i < joints.Length; i++)
-                    //{
-                    //    joints[i].position = copy[i];
-                    //}
                 }
 
                 // Update original joint rotations
