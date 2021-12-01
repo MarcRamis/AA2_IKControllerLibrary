@@ -47,6 +47,15 @@ namespace OctopusController
                     break;
                 case TentacleMode.TAIL:
                     //TODO: in _endEffectorsphere you keep a reference to the red sphere 
+                    tmpBone = root;
+                    bonesFromRoot.Add(tmpBone);
+                    for(int i = 0; i < 5; i++)
+                    {
+                        tmpBone = tmpBone.GetChild(1);
+                        bonesFromRoot.Add(tmpBone);
+                    }
+                    _endEffectorSphere = bonesFromRoot.Last<Transform>();
+                    _bones = bonesFromRoot.ToArray();
                     break;
                 case TentacleMode.TENTACLE:
                     //TODO: in _endEffectorphere you  keep a reference to the sphere with a collider attached to the endEffector
