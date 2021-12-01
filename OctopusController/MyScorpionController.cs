@@ -87,18 +87,12 @@ namespace OctopusController
             for(int i = 0; i < _legs.Length; i++)
             {
                 
-                if(Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 1f || legArrived[i])
+                if(Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 0.8f || legArrived[i])
                 {
                     legArrived[i] = true;
-                    if((Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 0.5f))
-                    {
-                        _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, legFutureBases[i].position + new Vector3(0, 0.5f, 0f), 0.4f);
-                    }
-                    else
-                    {
-                        _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, legFutureBases[i].position, 0.4f);
-                    }
                     
+                    _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, legFutureBases[i].position, 25f * Time.deltaTime);
+
                     if (Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) < 0.1f)
                     {
                         legArrived[i] = false;
@@ -132,20 +126,12 @@ namespace OctopusController
                     tempDistance += distances[i, j];
                 }
                 // Update joint positions
-                if (targetRootDist > tempDistance)
-                {
-                    // The target is unreachable
-                    //Debug.Log(tempDistance);
-                    //Debug.Log(targetRootDist);
-                }
-                else
+                if (targetRootDist <= tempDistance)
                 {
                     // The target is reachable
-                    //while (TODO)
                     while (Vector3.Distance(copy[i,_legs[i].Bones.Length - 1], legTargets[i].position) > 0.1f)
                     {
                         // STAGE 1: FORWARD REACHING
-                        //TODO
                         for (int j = _legs[i].Bones.Length - 1; j >= 0; j--)
                         {
                             if (j == _legs[i].Bones.Length - 1)
@@ -160,7 +146,6 @@ namespace OctopusController
                         }
 
                         // STAGE 2: BACKWARD REACHING
-                        //TODO
                         for (int j = 0; j < _legs[i].Bones.Length; j++)
                         {
                             if (j == 0)
@@ -180,7 +165,6 @@ namespace OctopusController
                 // Update original joint rotations
                 for (int j = 0; j <= _legs[i].Bones.Length - 2; j++)
                 {
-                    //TODO 
                     Vector3 vector1 = Vector3.Normalize(_legs[i].Bones[j + 1].position - _legs[i].Bones[j].position);
                     Vector3 vector2 = Vector3.Normalize(copy[i,j + 1] - copy[i,j]);
                     float angle = Vector3.Angle(vector1, vector2);
