@@ -20,6 +20,7 @@ namespace OctopusController
         Transform[] legTargets;
         Transform[] legFutureBases;
         MyTentacleController[] _legs = new MyTentacleController[6];
+        Transform[] auxFutureBases = new Transform[6];
 
         private Vector3[,] copy;
         private float[,] distances;
@@ -87,13 +88,16 @@ namespace OctopusController
             for(int i = 0; i < _legs.Length; i++)
             {
                 
-                if(Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 0.8f || legArrived[i])
+                if(Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) > 0.8f)
                 {
                     legArrived[i] = true;
-                    
-                    _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, legFutureBases[i].position, 25f * Time.deltaTime);
+                    auxFutureBases[i] = legFutureBases[i];     
+                }
+                if (legArrived[i])
+                {
+                    _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, auxFutureBases[i].position, 30f * Time.deltaTime);
 
-                    if (Vector3.Distance(_legs[i].Bones[0].position, legFutureBases[i].position) < 0.1f)
+                    if (Vector3.Distance(_legs[i].Bones[0].position, auxFutureBases[i].position) < 0.1f)
                     {
                         legArrived[i] = false;
                     }
