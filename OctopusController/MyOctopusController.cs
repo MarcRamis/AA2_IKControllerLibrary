@@ -18,11 +18,14 @@ namespace OctopusController
         Transform _target;
 
         Transform[] _randomTargets;// = new Transform[4];
+        Transform[] _currentTarget;
 
         float []_theta;
 
         float _twistMin, _twistMax;
         float _swingMin, _swingMax;
+
+        bool isBallHit = false;
 
         #region public methods
         //DO NOT CHANGE THE PUBLIC METHODS!!
@@ -37,7 +40,7 @@ namespace OctopusController
         {
 
            
-            Debug.Log("hello, I am initializing my Octopus Controller in object "+objectName);
+            Debug.Log("Project made by Alex Alcaide Arroyes & Marc Ramis Caldes. Hello, I am initializing my Octopus Controller in object "+objectName);
 
             
         }
@@ -46,16 +49,15 @@ namespace OctopusController
         {
             _tentacles = new MyTentacleController[tentacleRoots.Length];
 
-            // foreach (Transform t in tentacleRoots)
             for (int i = 0;  i  < tentacleRoots.Length; i++)
             {
-                
                 _tentacles[i] = new MyTentacleController();
                 _tentacles[i].LoadTentacleJoints(tentacleRoots[i],TentacleMode.TENTACLE);
                 //TODO: initialize any variables needed in ccd
             }
 
-            _randomTargets = randomTargets;
+            _currentTarget = randomTargets;
+            //_currentTarget = _randomTargets;
             //TODO: use the regions however you need to make sure each tentacle stays in its region
             _theta = new float[_tentacles[0].Bones.Length];
         }
@@ -70,20 +72,18 @@ namespace OctopusController
         public void NotifyShoot() {
             //TODO. what happens here?
             Debug.Log("Shoot");
+            isBallHit = true;
         }
 
 
         public void UpdateTentacles()
         {
             //TODO: implement logic for the correct tentacle arm to stop the ball and implement CCD method
+            SetTentacleTarget();
             update_ccd();
         }
 
-
-
-
         #endregion
-
 
         #region private and internal methods
         //todo: add here anything that you need
@@ -103,8 +103,8 @@ namespace OctopusController
             {
                 for (int j = _tentacles[i].Bones.Length - 2; j >= 0; j--)
                 {
-                    Vector3 r1 = _tentacles[i].Bones[_tentacles[i].Bones.Length - 1].transform.position - _tentacles[i].Bones[j].transform.position;
-                    Vector3 r2 = _randomTargets[i].transform.position - _tentacles[i].Bones[j].transform.position;
+                    Vector3 r1 = _tentacles[i].Bones[_tentacles[i].Bones.Length - 1].position - _tentacles[i].Bones[j].position;
+                    Vector3 r2 = _currentTarget[i].position - _tentacles[i].Bones[j].position;
 
                     float angle = 0f;
                     Vector3 axis = Vector3.zero;
@@ -137,8 +137,6 @@ namespace OctopusController
                         // Swing rotation with constraints
                         swing = Quaternion.AngleAxis(_theta[j], axis);
 
-
-
                         Quaternion result = swing * twist;
                         _tentacles[i].Bones[j].localRotation = result;
                     }
@@ -146,8 +144,28 @@ namespace OctopusController
             }
         }
 
-
-        
+        void SetTentacleTarget()
+        {
+            if (isBallHit)
+            {
+                if (_currentRegion.localPosition.z == -15f)
+                {
+                    _currentTarget[0] = _target;
+                }
+                else if (_currentRegion.localPosition.z == -5f)
+                {
+                    _currentTarget[1] = _target;
+                }
+                else if (_currentRegion.localPosition.z == 5f)
+                {
+                    _currentTarget[2] = _target;
+                }
+                else if(_currentRegion.localPosition.z == 15f) 
+                {
+                    _currentTarget[3] = _target;
+                }
+            }
+        }
 
         #endregion
 
