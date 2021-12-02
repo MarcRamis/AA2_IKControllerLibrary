@@ -86,7 +86,7 @@ namespace OctopusController
             _tail.LoadTentacleJoints(TailBase, TentacleMode.TAIL);
             //TODO: Initialize anything needed for the Gradient Descent implementation
 
-            Axis[0] = new Vector3(1, 0, 0);
+            Axis[0] = new Vector3(0, 0, 1);
             Axis[1] = new Vector3(1, 0, 0);
             Axis[2] = new Vector3(1, 0, 0);
             Axis[3] = new Vector3(1, 0, 0);
@@ -137,8 +137,8 @@ namespace OctopusController
         //TODO: implement Gradient Descent method to move tail if necessary
         private void updateTail()
         {
-            //if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
-            //    return;
+            if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
+                return;
 
             for (int i = 0; i < _tail.Bones.Length; i++)
             {
@@ -152,8 +152,8 @@ namespace OctopusController
                 else if (Axis[i].z == 1) 
                     _tail.Bones[i].transform.localEulerAngles = new Vector3(initialAngles[i].x, initialAngles[i].y, angles[i]);
                 
-                //if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
-                //    return;
+                if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
+                    return;
             }
         }
         //TODO: implement fabrik method to move legs 
