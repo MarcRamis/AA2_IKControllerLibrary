@@ -175,7 +175,7 @@ namespace OctopusController
             else
             {
                 for (int i = 0; i < _tentacles.Length; i++)
-                {
+                {   
                     _currentTarget[i].position = _randomTargets[i].position;
                 }
             }
