@@ -18,7 +18,7 @@ namespace OctopusController
         Transform _target;
 
         Transform[] _randomTargets;// = new Transform[4];
-        Transform[] _currentTarget = new Transform[4];
+        Transform[] _currentTarget;
 
         float []_theta;
 
@@ -40,7 +40,7 @@ namespace OctopusController
         {
 
            
-            Debug.Log("hello, I am initializing my Octopus Controller in object "+objectName);
+            Debug.Log("Project made by Alex Alcaide Arroyes & Marc Ramis Caldes. Hello, I am initializing my Octopus Controller in object "+objectName);
 
             
         }
@@ -49,16 +49,15 @@ namespace OctopusController
         {
             _tentacles = new MyTentacleController[tentacleRoots.Length];
 
-            // foreach (Transform t in tentacleRoots)
             for (int i = 0;  i  < tentacleRoots.Length; i++)
             {
-                
                 _tentacles[i] = new MyTentacleController();
                 _tentacles[i].LoadTentacleJoints(tentacleRoots[i],TentacleMode.TENTACLE);
                 //TODO: initialize any variables needed in ccd
             }
 
-            _randomTargets = randomTargets;
+            _currentTarget = randomTargets;
+            //_currentTarget = _randomTargets;
             //TODO: use the regions however you need to make sure each tentacle stays in its region
             _theta = new float[_tentacles[0].Bones.Length];
         }
@@ -138,8 +137,6 @@ namespace OctopusController
                         // Swing rotation with constraints
                         swing = Quaternion.AngleAxis(_theta[j], axis);
 
-
-
                         Quaternion result = swing * twist;
                         _tentacles[i].Bones[j].localRotation = result;
                     }
@@ -147,40 +144,28 @@ namespace OctopusController
             }
         }
 
-        private void SetTentacleTarget()
+        void SetTentacleTarget()
         {
             if (isBallHit)
             {
-                if (_currentRegion.position.z == -15f)
+                if (_currentRegion.localPosition.z == -15f)
                 {
-                    _currentTarget[0].position = _target.position;
-                    return;
+                    _currentTarget[0] = _target;
                 }
-                else if (_currentRegion.position.z == -5f)
+                else if (_currentRegion.localPosition.z == -5f)
                 {
-                    _currentTarget[1].position = _target.position;
-                    return;
+                    _currentTarget[1] = _target;
                 }
-                else if (_currentRegion.position.z == 5f)
+                else if (_currentRegion.localPosition.z == 5f)
                 {
-                    _currentTarget[2].position = _target.position;
-                    return;
+                    _currentTarget[2] = _target;
                 }
-                else
+                else if(_currentRegion.localPosition.z == 15f) 
                 {
-                    _currentTarget[3].position = _target.position;
-                    return;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < _tentacles.Length; i++)
-                {   
-                    _currentTarget[i].position = _randomTargets[i].position;
+                    _currentTarget[3] = _target;
                 }
             }
         }
-
 
         #endregion
 
