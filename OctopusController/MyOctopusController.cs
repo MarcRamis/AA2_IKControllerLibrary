@@ -18,11 +18,14 @@ namespace OctopusController
         Transform _target;
 
         Transform[] _randomTargets;// = new Transform[4];
+        Transform[] _currentTarget = new Transform[4];
 
         float []_theta;
 
         float _twistMin, _twistMax;
         float _swingMin, _swingMax;
+
+        bool isBallHit = false;
 
         #region public methods
         //DO NOT CHANGE THE PUBLIC METHODS!!
@@ -70,20 +73,18 @@ namespace OctopusController
         public void NotifyShoot() {
             //TODO. what happens here?
             Debug.Log("Shoot");
+            isBallHit = true;
         }
 
 
         public void UpdateTentacles()
         {
             //TODO: implement logic for the correct tentacle arm to stop the ball and implement CCD method
+            SetTentacleTarget();
             update_ccd();
         }
 
-
-
-
         #endregion
-
 
         #region private and internal methods
         //todo: add here anything that you need
@@ -103,8 +104,8 @@ namespace OctopusController
             {
                 for (int j = _tentacles[i].Bones.Length - 2; j >= 0; j--)
                 {
-                    Vector3 r1 = _tentacles[i].Bones[_tentacles[i].Bones.Length - 1].transform.position - _tentacles[i].Bones[j].transform.position;
-                    Vector3 r2 = _randomTargets[i].transform.position - _tentacles[i].Bones[j].transform.position;
+                    Vector3 r1 = _tentacles[i].Bones[_tentacles[i].Bones.Length - 1].position - _tentacles[i].Bones[j].position;
+                    Vector3 r2 = _currentTarget[i].position - _tentacles[i].Bones[j].position;
 
                     float angle = 0f;
                     Vector3 axis = Vector3.zero;
@@ -146,8 +147,40 @@ namespace OctopusController
             }
         }
 
+        private void SetTentacleTarget()
+        {
+            if (isBallHit)
+            {
+                if (_currentRegion.position.z == -15f)
+                {
+                    _currentTarget[0].position = _target.position;
+                    return;
+                }
+                else if (_currentRegion.position.z == -5f)
+                {
+                    _currentTarget[1].position = _target.position;
+                    return;
+                }
+                else if (_currentRegion.position.z == 5f)
+                {
+                    _currentTarget[2].position = _target.position;
+                    return;
+                }
+                else
+                {
+                    _currentTarget[3].position = _target.position;
+                    return;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < _tentacles.Length; i++)
+                {
+                    _currentTarget[i].position = _randomTargets[i].position;
+                }
+            }
+        }
 
-        
 
         #endregion
 
