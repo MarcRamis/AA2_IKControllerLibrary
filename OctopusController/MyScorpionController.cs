@@ -55,7 +55,7 @@ namespace OctopusController
         float deltaGradient = 0.01f;
         float learningRate = 10f;
         float StopThreshold = 0.1f;
-        float[] angles = null;
+        float[] angles = new float[6];
         Vector3[] StartOffset = new Vector3[6];
         Vector3[] Axis = new Vector3[6];
 
@@ -84,18 +84,20 @@ namespace OctopusController
             _tail = new MyTentacleController();
             _tail.LoadTentacleJoints(TailBase, TentacleMode.TAIL);
             //TODO: Initialize anything needed for the Gradient Descent implementation
-            for(int i = 0; i < _tail.Bones.Length; i++)
-            {
-                StartOffset[i] = _tail.Bones[i].transform.localPosition;
-                
-            }
+
             Axis[0] = new Vector3(1, 0, 0);
             Axis[1] = new Vector3(0, 0, 1);
             Axis[2] = new Vector3(0, 0, 1);
             Axis[3] = new Vector3(1, 0, 0);
             Axis[4] = new Vector3(1, 0, 0);
             Axis[5] = new Vector3(0, 0, 0);
-            angles = new float[_tail.Bones.Length];
+
+            for (int i = 0; i < _tail.Bones.Length; i++)
+            {
+                StartOffset[i] = _tail.Bones[i].localPosition;
+                angles[i] = GetAngle(Axis[i], _tail.Bones[i]);
+            }
+
         }
 
         //TODO: Check when to start the animation towards target and implement Gradient Descent method to move the joints.
@@ -141,18 +143,14 @@ namespace OctopusController
             {
                 float gradient = CalculateGradient(tailTarget.transform.position, angles, i, deltaGradient);
                 angles[i] -= learningRate * gradient; // Iteration step
-                if (Axis[i].x == 1)
-                {
+                
+                if (Axis[i].x == 1) 
                     _tail.Bones[i].transform.localEulerAngles = new Vector3(angles[i], 0, 0);
-                }
-                else if (Axis[i].y == 1)
-                {
+                else if (Axis[i].y == 1) 
                     _tail.Bones[i].transform.localEulerAngles = new Vector3(0, angles[i], 0);
-                }
-                else if (Axis[i].z == 1)
-                {
+                else if (Axis[i].z == 1) 
                     _tail.Bones[i].transform.localEulerAngles = new Vector3(0, 0, angles[i]);
-                }
+                
                 if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
                     return;
             }
@@ -161,26 +159,6 @@ namespace OctopusController
         private void updateLegs()
         {
             
-        }
-        private PositionRotation ForwardKinematics(float[] _angles)
-        {
-            Vector3 prevPoint = _tail.Bones[0].transform.position;
-
-            // Takes object initial rotation into account
-            Quaternion rotation = _tail.Bones[0].transform.localRotation;
-
-            for (int i = 0; i < _tail.Bones.Length; i++)
-            {
-                rotation *= Quaternion.AngleAxis(_angles[i], Axis[i]);
-                Vector3 nextPoint = prevPoint + rotation * StartOffset[i];
-
-                Debug.DrawLine(prevPoint, nextPoint, Color.white);
-                prevPoint = nextPoint;
-            }
-
-
-            // The end of the effector
-            return new PositionRotation(prevPoint, rotation);
         }
         private float CalculateGradient(Vector3 target, float[] _angles, int i, float delta)
         {
@@ -203,6 +181,48 @@ namespace OctopusController
             Vector3 point = ForwardKinematics(_angles);
             return Vector3.Distance(point, target);
         }
+        private PositionRotation ForwardKinematics(float[] _angles)
+        {
+            Vector3 prevPoint = _tail.Bones[0].transform.position;
+
+            // Takes object initial rotation into account
+            Quaternion rotation = _tail.Bones[0].transform.localRotation;
+
+            for (int i = 1; i < _tail.Bones.Length; i++)
+            {
+                rotation *= Quaternion.AngleAxis(_angles[i - 1], Axis[i - 1]);
+                Vector3 nextPoint = prevPoint + rotation * StartOffset[i];
+
+                Debug.DrawLine(prevPoint, nextPoint, Color.white);
+                prevPoint = nextPoint;
+            }
+
+
+            // The end of the effector
+            return new PositionRotation(prevPoint, rotation);
+        }
+
+        private float GetAngle(Vector3 axis, Transform bone)
+        {
+            float angle = 0;
+            if (axis.x == 1)
+                angle = bone.localEulerAngles.x;
+            else if (axis.y == 1)
+                angle = bone.localEulerAngles.y;
+            else if (axis.z == 1)
+                angle = bone.localEulerAngles.z;
+
+            return angle;
+        }
+        private void SetAngle(Vector3 axis, float _angle, Transform bone)
+        {
+            float angle = 0;
+
+            //if (axis.x == 1)
+            //else if (axis.y == 1)
+            //else if (axis.z == 1)
+        }
+
         #endregion
     }
 }
