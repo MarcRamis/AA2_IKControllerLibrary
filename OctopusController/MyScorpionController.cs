@@ -229,24 +229,18 @@ namespace OctopusController
                                 copy[i, j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
                             }
                         }
-            
-        }
-        private float CalculateGradient(Vector3 target, float[] _angles, int i, float delta)
-        {
-            float angle = _angles[i]; // saves the angle to restore it later
-
                         // STAGE 2: BACKWARD REACHING
                         for (int j = 0; j < _legs[i].Bones.Length; j++)
                         {
                             if (j == 0)
                             {
                                 Vector3 tempVec = _legs[i].Bones[0].position;
-                                copy[i,j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
+                                copy[i, j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
                             }
                             else
                             {
                                 Vector3 tempVec = Vector3.Normalize(copy[i, j] - copy[i, j - 1]) * Vector3.Distance(_legs[i].Bones[j].position, _legs[i].Bones[j - 1].position) + copy[i, j - 1];
-                                copy[i,j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
+                                copy[i, j] = new Vector3(tempVec.x, tempVec.y, tempVec.z);
                             }
                         }
                     }
@@ -256,12 +250,18 @@ namespace OctopusController
                 for (int j = 0; j <= _legs[i].Bones.Length - 2; j++)
                 {
                     Vector3 vector1 = Vector3.Normalize(_legs[i].Bones[j + 1].position - _legs[i].Bones[j].position);
-                    Vector3 vector2 = Vector3.Normalize(copy[i,j + 1] - copy[i,j]);
+                    Vector3 vector2 = Vector3.Normalize(copy[i, j + 1] - copy[i, j]);
                     float angle = Vector3.Angle(vector1, vector2);
                     Vector3 axis = Vector3.Cross(vector1, vector2);
                     _legs[i].Bones[j].transform.Rotate(axis, angle, Space.World);
                 }
             }
+
+        }
+        private float CalculateGradient(Vector3 target, float[] _angles, int i, float delta)
+        {
+            float angle = _angles[i]; // saves the angle to restore it later
+
             float f_x = DistanceFromTarget(target, _angles);
             _angles[i] += delta;
             float f_x_plus_d = DistanceFromTarget(target, _angles);
