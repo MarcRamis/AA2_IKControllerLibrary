@@ -56,6 +56,7 @@ namespace OctopusController
         float learningRate = 10f;
         float StopThreshold = 0.1f;
         float[] angles = new float[6];
+        Vector3[] initialAngles = new Vector3[6];
         Vector3[] StartOffset = new Vector3[6];
         Vector3[] Axis = new Vector3[6];
 
@@ -86,16 +87,17 @@ namespace OctopusController
             //TODO: Initialize anything needed for the Gradient Descent implementation
 
             Axis[0] = new Vector3(1, 0, 0);
-            Axis[1] = new Vector3(0, 0, 1);
-            Axis[2] = new Vector3(0, 0, 1);
+            Axis[1] = new Vector3(1, 0, 0);
+            Axis[2] = new Vector3(1, 0, 0);
             Axis[3] = new Vector3(1, 0, 0);
             Axis[4] = new Vector3(1, 0, 0);
             Axis[5] = new Vector3(0, 0, 0);
 
             for (int i = 0; i < _tail.Bones.Length; i++)
             {
-                StartOffset[i] = _tail.Bones[i].localPosition;
+                StartOffset[i] = _tail.Bones[i].position - _tail.Bones[i].parent.position;
                 angles[i] = GetAngle(Axis[i], _tail.Bones[i]);
+                initialAngles[i] =_tail.Bones[i].localEulerAngles;
             }
 
         }
@@ -117,7 +119,6 @@ namespace OctopusController
 
         public void UpdateIK()
         {
-            Debug.Log(Vector3.Distance(tailTarget.transform.position, _tail.Bones[_tail.Bones.Length - 1].transform.position) + "/////" + (animationRange));
             if (Vector3.Distance(tailTarget.transform.position, _tail.Bones[_tail.Bones.Length - 1].transform.position) < animationRange)
             {
                 updateTail();
@@ -136,8 +137,8 @@ namespace OctopusController
         //TODO: implement Gradient Descent method to move tail if necessary
         private void updateTail()
         {
-            if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
-                return;
+            //if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
+            //    return;
 
             for (int i = 0; i < _tail.Bones.Length; i++)
             {
@@ -145,14 +146,14 @@ namespace OctopusController
                 angles[i] -= learningRate * gradient; // Iteration step
                 
                 if (Axis[i].x == 1) 
-                    _tail.Bones[i].transform.localEulerAngles = new Vector3(angles[i], 0, 0);
+                    _tail.Bones[i].transform.localEulerAngles = new Vector3(angles[i], initialAngles[i].y, initialAngles[i].z);
                 else if (Axis[i].y == 1) 
-                    _tail.Bones[i].transform.localEulerAngles = new Vector3(0, angles[i], 0);
+                    _tail.Bones[i].transform.localEulerAngles = new Vector3(initialAngles[i].x, angles[i], initialAngles[i].z);
                 else if (Axis[i].z == 1) 
-                    _tail.Bones[i].transform.localEulerAngles = new Vector3(0, 0, angles[i]);
+                    _tail.Bones[i].transform.localEulerAngles = new Vector3(initialAngles[i].x, initialAngles[i].y, angles[i]);
                 
-                if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
-                    return;
+                //if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
+                //    return;
             }
         }
         //TODO: implement fabrik method to move legs 
