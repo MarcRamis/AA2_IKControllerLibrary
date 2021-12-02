@@ -32,18 +32,6 @@ namespace OctopusController
             return pr.rotation;
         }
     }
-
-    public class RobotJoint
-    {
-        // A single 1, which is the axes of movement
-        public Vector3 Axis;
-        public float MinAngle;
-        public float MaxAngle;
-
-        // The offset at resting position
-        public Vector3 StartOffset;
-    }
-
     public class MyScorpionController
     {
         //TAIL
@@ -59,6 +47,8 @@ namespace OctopusController
         Vector3[] initialAngles = new Vector3[6];
         Vector3[] StartOffset = new Vector3[6];
         Vector3[] Axis = new Vector3[6];
+        float[] minAngle = new float[6];
+        float[] maxAngle = new float[6];
 
         //LEGS
         Transform[] legTargets;
@@ -101,18 +91,37 @@ namespace OctopusController
             _tail.LoadTentacleJoints(TailBase, TentacleMode.TAIL);
             //TODO: Initialize anything needed for the Gradient Descent implementation
 
-            Axis[0] = new Vector3(0, 1, 0);
-            Axis[1] = new Vector3(1, 0, 0);
-            Axis[2] = new Vector3(1, 0, 0);
-            Axis[3] = new Vector3(1, 0, 0);
-            Axis[4] = new Vector3(1, 0, 0);
-            Axis[5] = new Vector3(1, 0, 0);
+            // Axis direction to move
+            Axis[0] = new Vector3(0f, 0f, 1f);
+            Axis[1] = new Vector3(1f, 0f, 0f);
+            Axis[2] = new Vector3(1f, 0f, 0f);
+            Axis[3] = new Vector3(1f, 0f, 0f);
+            Axis[4] = new Vector3(1f, 0f, 0f);
+            Axis[5] = new Vector3(0f, 0f, 0f);
+
+            // Angle clamps
+            minAngle[0] = -90;
+            maxAngle[0] = 90;
+            
+            minAngle[1] = -90;
+            maxAngle[1] = 0;
+            
+            minAngle[2] = -100;
+            maxAngle[2] = 0;
+            
+            minAngle[3] = -90;
+            maxAngle[3] = 0;
+            
+            minAngle[4] = -50;
+            maxAngle[4] = 10;
+            
+            minAngle[5] = 0f;
+            maxAngle[5] = 0f;
 
             for (int i = 0; i < _tail.Bones.Length; i++)
             {
                 StartOffset[i] = _tail.Bones[i].localPosition * 0.32622f;
                 angles[i] = GetAngle(Axis[i], _tail.Bones[i]);
-                //initialAngles[i] = _tail.Bones[i].localEulerAngles;
                 initialAngles[i] = new Vector3(0f,0f,0f);
             }
 
@@ -179,7 +188,9 @@ namespace OctopusController
             {
                 float gradient = CalculateGradient(tailTarget.transform.position, angles, i, deltaGradient);
                 angles[i] -= learningRate * gradient; // Iteration step
-                
+
+                angles[i] = Mathf.Clamp(angles[i], minAngle[i], maxAngle[i]);
+
                 if (Axis[i].x == 1) 
                     _tail.Bones[i].localEulerAngles = new Vector3(angles[i], initialAngles[i].y, initialAngles[i].z);
                 else if (Axis[i].y == 1) 
