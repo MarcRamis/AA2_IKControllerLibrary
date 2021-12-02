@@ -32,33 +32,23 @@ namespace OctopusController
             return pr.rotation;
         }
     }
-
-    public class RobotJoint
-    {
-        // A single 1, which is the axes of movement
-        public Vector3 Axis;
-        public float MinAngle;
-        public float MaxAngle;
-
-        // The offset at resting position
-        public Vector3 StartOffset;
-    }
-
     public class MyScorpionController
     {
         //TAIL
         Transform tailTarget;
         Transform tailEndEffector;
         MyTentacleController _tail;
-        float animationRange = 3f;
+        float animationRange = 7f;
 
         float deltaGradient = 0.01f;
-        float learningRate = 10f;
+        float learningRate = 25f;
         float StopThreshold = 0.1f;
         float[] angles = new float[6];
         Vector3[] initialAngles = new Vector3[6];
         Vector3[] StartOffset = new Vector3[6];
         Vector3[] Axis = new Vector3[6];
+        float[] minAngle = new float[6];
+        float[] maxAngle = new float[6];
 
         //LEGS
         Transform[] legTargets;
@@ -101,18 +91,39 @@ namespace OctopusController
             _tail.LoadTentacleJoints(TailBase, TentacleMode.TAIL);
             //TODO: Initialize anything needed for the Gradient Descent implementation
 
-            Axis[0] = new Vector3(0, 0, 1);
-            Axis[1] = new Vector3(1, 0, 0);
-            Axis[2] = new Vector3(1, 0, 0);
-            Axis[3] = new Vector3(1, 0, 0);
-            Axis[4] = new Vector3(1, 0, 0);
-            Axis[5] = new Vector3(0, 0, 0);
+            // Axis direction to move
+            Axis[0] = new Vector3(0f, 0f, 1f);
+            Axis[1] = new Vector3(1f, 0f, 0f);
+            Axis[2] = new Vector3(1f, 0f, 0f);
+            Axis[3] = new Vector3(1f, 0f, 0f);
+            Axis[4] = new Vector3(1f, 0f, 0f);
+            Axis[5] = new Vector3(0f, 0f, 0f);
+
+            // Angle clamps
+            minAngle[0] = -90;
+            maxAngle[0] = 90;
+            
+            minAngle[1] = -90;
+            maxAngle[1] = 0;
+            
+            minAngle[2] = -100;
+            maxAngle[2] = 0;
+            
+            minAngle[3] = -90;
+            maxAngle[3] = 0;
+            
+            minAngle[4] = -50;
+            maxAngle[4] = 10;
+            
+            minAngle[5] = 0f;
+            maxAngle[5] = 0f;
 
             for (int i = 0; i < _tail.Bones.Length; i++)
             {
-                StartOffset[i] = _tail.Bones[i].position - _tail.Bones[i].parent.position;
+                StartOffset[i] = _tail.Bones[i].localPosition * 0.32622f;
                 angles[i] = GetAngle(Axis[i], _tail.Bones[i]);
-                initialAngles[i] =_tail.Bones[i].localEulerAngles;
+                angles[i] = Mathf.Clamp(angles[i],minAngle[i],maxAngle[i]);
+                initialAngles[i] = new Vector3(0f,0f,0f);
             }
 
         }
@@ -121,7 +132,6 @@ namespace OctopusController
         public void NotifyTailTarget(Transform target)
         {
             tailTarget = target;
-            
         }
 
         //TODO: Notifies the start of the walking animation
@@ -136,7 +146,7 @@ namespace OctopusController
         {
             updateLegPos();
             updateLegs();
-            if (Vector3.Distance(tailTarget.transform.position, _tail.Bones[_tail.Bones.Length - 1].transform.position) < animationRange)
+            if (Vector3.Distance(tailTarget.position, _tail.Bones[_tail.Bones.Length - 1].position) < animationRange)
             {
                 updateTail();
             }
@@ -159,7 +169,7 @@ namespace OctopusController
                 }
                 if (legArrived[i])
                 {
-                    _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, auxFutureBases[i].position, 30f * Time.deltaTime);
+                    _legs[i].Bones[0].position = Vector3.Lerp(_legs[i].Bones[0].position, auxFutureBases[i].position, 70f * Time.deltaTime);
 
                     if (Vector3.Distance(_legs[i].Bones[0].position, auxFutureBases[i].position) < 0.1f)
                     {
@@ -167,27 +177,28 @@ namespace OctopusController
                     }
                 }
             }
-            //
         }
         //TODO: implement Gradient Descent method to move tail if necessary
         private void updateTail()
         {
-            if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
+            if (DistanceFromTarget(tailTarget.position, angles) < StopThreshold)
                 return;
 
             for (int i = 0; i < _tail.Bones.Length; i++)
             {
-                float gradient = CalculateGradient(tailTarget.transform.position, angles, i, deltaGradient);
+                float gradient = CalculateGradient(tailTarget.position, angles, i, deltaGradient);
                 angles[i] -= learningRate * gradient; // Iteration step
-                
+
+                angles[i] = Mathf.Clamp(angles[i], minAngle[i], maxAngle[i]);
+
                 if (Axis[i].x == 1) 
-                    _tail.Bones[i].transform.localEulerAngles = new Vector3(angles[i], initialAngles[i].y, initialAngles[i].z);
+                    _tail.Bones[i].localEulerAngles = new Vector3(angles[i], initialAngles[i].y, initialAngles[i].z);
                 else if (Axis[i].y == 1) 
-                    _tail.Bones[i].transform.localEulerAngles = new Vector3(initialAngles[i].x, angles[i], initialAngles[i].z);
+                    _tail.Bones[i].localEulerAngles = new Vector3(initialAngles[i].x, angles[i], initialAngles[i].z);
                 else if (Axis[i].z == 1) 
-                    _tail.Bones[i].transform.localEulerAngles = new Vector3(initialAngles[i].x, initialAngles[i].y, angles[i]);
-                
-                if (DistanceFromTarget(tailTarget.transform.position, angles) < StopThreshold)
+                    _tail.Bones[i].localEulerAngles = new Vector3(initialAngles[i].x, initialAngles[i].y, angles[i]);
+
+                if (DistanceFromTarget(tailTarget.position, angles) < StopThreshold)
                     return;
             }
         }
@@ -272,8 +283,7 @@ namespace OctopusController
 
             return gradient;
         }
-            
-
+        
         // Returns the distance from the target, given a solution
         private float DistanceFromTarget(Vector3 target, float[] _angles)
         {
@@ -282,10 +292,10 @@ namespace OctopusController
         }
         private PositionRotation ForwardKinematics(float[] _angles)
         {
-            Vector3 prevPoint = _tail.Bones[0].transform.position;
+            Vector3 prevPoint = _tail.Bones[0].position;
 
             // Takes object initial rotation into account
-            Quaternion rotation = _tail.Bones[0].transform.localRotation;
+            Quaternion rotation = Quaternion.identity;
 
             for (int i = 1; i < _tail.Bones.Length; i++)
             {
@@ -295,7 +305,6 @@ namespace OctopusController
                 Debug.DrawLine(prevPoint, nextPoint, Color.white);
                 prevPoint = nextPoint;
             }
-
 
             // The end of the effector
             return new PositionRotation(prevPoint, rotation);
@@ -312,14 +321,6 @@ namespace OctopusController
                 angle = bone.localEulerAngles.z;
 
             return angle;
-        }
-        private void SetAngle(Vector3 axis, float _angle, Transform bone)
-        {
-            float angle = 0;
-
-            //if (axis.x == 1)
-            //else if (axis.y == 1)
-            //else if (axis.z == 1)
         }
 
         #endregion

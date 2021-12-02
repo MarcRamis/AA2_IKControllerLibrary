@@ -92,3 +92,10 @@ C:\Users\alex\Documents\Universidad\GitKraken\AA2_IKControllerLibrary\OctopusCon
 C:\Users\alex\Documents\Universidad\GitKraken\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.dll
 C:\Users\alex\Documents\Universidad\GitKraken\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.pdb
 >>>>>>> delivery2exercise2
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\bin\Debug\OctopusController.dll
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\bin\Debug\OctopusController.pdb
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.csprojAssemblyReference.cache
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.csproj.CoreCompileInputs.cache
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.csproj.CopyComplete
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.dll
+D:\Uni Projects\Animacion y Modelado\AA2\AA2_IKControllerLibrary\OctopusController\obj\Debug\OctopusController.pdb
